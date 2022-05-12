@@ -24,7 +24,7 @@
 
             <label for="search" class="sr-only">Search</label>
             <div class="ml-2 relative sm:w-64 xl:w-96">
-                <input wire:model.debounce.500ms="q" type="search" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-cyan-600 focus:border-cyan-600 block w-full p-2.5" placeholder="Search for students">
+                <input wire:model.debounce.500ms="search" type="search" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-cyan-600 focus:border-cyan-600 block w-full p-2.5" placeholder="Search for students">
             </div>
 
             <div class="flex items-center sm:justify-end w-full">

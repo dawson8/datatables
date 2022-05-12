@@ -13,6 +13,7 @@ class Students extends Component
 
     public $paginate = 10;
     public $checked = [];
+    public $search;
 
     public function deleteRecords()
     {
@@ -39,7 +40,9 @@ class Students extends Component
     public function render()
     {
         return view('livewire.students', [
-            'students' => Student::with(['class', 'section'])->paginate($this->paginate),
+            'students' => Student::with(['class', 'section'])
+                ->search(trim($this->search))
+                ->paginate($this->paginate),
             'classes' => Classes::all()
         ]);
     }
