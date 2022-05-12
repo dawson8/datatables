@@ -14,6 +14,9 @@ class Students extends Component
     public $paginate = 10;
     public $checked = [];
     public $search;
+    public $selectedClass;
+    // public $sections;
+    // public $selectedSection;
 
     public function deleteRecords()
     {
@@ -37,10 +40,22 @@ class Students extends Component
         return in_array($student_id, $this->checked);
     }
 
+    // TODO: We didn't set our database up like this because it made no sense
+    // public function updatedSelectedClass($class_id)
+    // {
+    //     $this->sections = Section::where('class_id', $class_id)->get();
+    // }
+
     public function render()
     {
         return view('livewire.students', [
             'students' => Student::with(['class', 'section'])
+                ->when($this->selectedClass, function($query) {
+                    $query->where('class_id', $this->selectedClass);
+                })
+                // ->when($this->selectedSection, function($query) {
+                //     $query->where('section_id', $this->selectedSection);
+                // })
                 ->search(trim($this->search))
                 ->paginate($this->paginate),
             'classes' => Classes::all()

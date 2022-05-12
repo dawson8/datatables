@@ -12,7 +12,7 @@
                 </select>
             </div>
 
-            <label for="paginate" class="sr-only">FilterBy Class</label>
+            <label for="paginate" class="sr-only">Filter By Class</label>
             <div class="ml-2 relative w-48">
                 <select class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-cyan-600 focus:border-cyan-600 block w-full p-2.5" wire:model="selectedClass">
                     <option value="">All Classes</option>
@@ -21,6 +21,18 @@
                     @endforeach
                 </select>
             </div>
+            {{-- TODO: We didn't set our database up like this because it made no sense --}}
+            {{-- @if($selectedClass)
+                <label for="paginate" class="sr-only">Filter By Section</label>
+                <div class="ml-2 relative w-64">
+                    <select class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-cyan-600 focus:border-cyan-600 block w-full p-2.5" wire:model="selectedSection">
+                        <option value="">All Sections</option>
+                        @foreach ($sections as $item)
+                            <option value="{{ $item->id }}">{{ $item->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+            @endif --}}
 
             <label for="search" class="sr-only">Search</label>
             <div class="ml-2 relative sm:w-64 xl:w-96">
