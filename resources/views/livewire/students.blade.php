@@ -4,7 +4,7 @@
         <div class="block sm:flex items-center md:divide-x md:divide-gray-100">
             <label for="paginate" class="sr-only">Per Page</label>
             <div class="relative w-24">
-                <select wire:model="paginate" name="paginate" id="paginate" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-cyan-600 focus:border-cyan-600 block w-full p-2.5">
+                <select wire:model="paginate" name="paginate" id="paginate" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-sky-600 focus:border-sky-600 block w-full p-2.5">
                     <option value="10">10</option>
                     <option value="10">10</option>
                     <option value="20">20</option>
@@ -14,7 +14,7 @@
 
             <label for="paginate" class="sr-only">Filter By Class</label>
             <div class="ml-2 relative w-48">
-                <select class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-cyan-600 focus:border-cyan-600 block w-full p-2.5" wire:model="selectedClass">
+                <select class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-sky-600 focus:border-sky-600 block w-full p-2.5" wire:model="selectedClass">
                     <option value="">All Classes</option>
                     @foreach ($classes as $item)
                         <option value="{{ $item->id }}">{{ $item->name }}</option>
@@ -25,7 +25,7 @@
             {{-- @if($selectedClass)
                 <label for="paginate" class="sr-only">Filter By Section</label>
                 <div class="ml-2 relative w-64">
-                    <select class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-cyan-600 focus:border-cyan-600 block w-full p-2.5" wire:model="selectedSection">
+                    <select class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-sky-600 focus:border-sky-600 block w-full p-2.5" wire:model="selectedSection">
                         <option value="">All Sections</option>
                         @foreach ($sections as $item)
                             <option value="{{ $item->id }}">{{ $item->name }}</option>
@@ -36,27 +36,41 @@
 
             <label for="search" class="sr-only">Search</label>
             <div class="ml-2 relative sm:w-64 xl:w-96">
-                <input wire:model.debounce.500ms="search" type="search" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-cyan-600 focus:border-cyan-600 block w-full p-2.5" placeholder="Search for students">
+                <input wire:model.debounce.500ms="search" type="search" class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-sky-600 focus:border-sky-600 block w-full p-2.5" placeholder="Search for students">
             </div>
 
             <div class="flex items-center sm:justify-end w-full">
-                <div class="hidden md:flex pl-2 space-x-1">
+                <div class="md:flex pl-2 space-x-1">
                     @if ($checked)
                     {{-- TODO: Fix this mess!!! use a dialogmodal --}}
-                        <a href="#" class="text-gray-500 hover:text-gray-900 cursor-pointer p-1 hover:bg-gray-100 rounded inline-flex justify-center" onclick="confirm('Are you sure you want to dekete these Records?') || event.stopImediatePropagation()" wire:click="deleteRecords()">
+                        <button class="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded inline-flex justify-center" onclick="confirm('Are you sure you want to delete these Records?') || event.stopImediatePropagation()" wire:click="deleteRecords()">
                             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                                 <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd"></path>
                             </svg>
                             {{ count($checked) }}
-                        </a>
+                        </button>
+                        <button class="text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded inline-flex justify-center" onclick="confirm('Are you sure you want to export these Records?') || event.stopImediatePropagation()" wire:click="exportSelected()">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                        </button>
+
+                        @if($selectPage)
+                            <span class="text-gray-500">
+                                @if($selectAll)
+                                    You have selected all <strong>{{ $students->total() }}</strong> items
+                                @else
+                                    You have selected <strong>{{ count($checked) }}</strong> items, Do you want to select all <strong>{{ $students->total() }}</strong>?
+                                    <button wire:click="selectAll" class="ml-1 text-sky-600 hover:text-sky-700">Select All</button>
+                                @endif
+                            </span>
+                        @endif
                     @endif
                 </div>
-                
-                {{-- TODO: use this space for messages --}}
 
                 <button wire:click="confirmingProductAdd"
                     type="button"
-                    class="text-white bg-cyan-600 hover:bg-cyan-700 focus:ring-4 focus:ring-cyan-200 font-medium inline-flex items-center rounded-lg text-sm px-3 py-2 text-center sm:ml-auto">
+                    class="text-white bg-sky-600 hover:bg-sky-700 focus:ring-4 focus:ring-sky-200 font-medium inline-flex items-center rounded-lg text-sm px-3 py-2 text-center sm:ml-auto">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 -ml-1 mr-2" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M10 5a1 1 0 011 1v3h3a1 1 0 110 2h-3v3a1 1 0 11-2 0v-3H6a1 1 0 110-2h3V6a1 1 0 011-1z" clip-rule="evenodd" />
                     </svg>
@@ -72,7 +86,7 @@
             <tr class="text-left text-sm text-gray-500">
                 <th class="p-2">
                     <div class="flex items-center">
-                        <input type="checkbox" class="bg-gray-50 border-gray-300 focus:ring-3 focus:ring-cyan-200 h-4 w-4 rounded" wire:model="selectPage">
+                        <input type="checkbox" class="bg-gray-50 border-gray-300 focus:ring-3 focus:ring-sky-200 h-4 w-4 rounded" wire:model="selectPage">
                     </div>
                 </th>
                 <th class="">
@@ -110,7 +124,7 @@
                             <input
                                 type="checkbox"
                                 value="{{ $student->id }}"
-                                class="bg-gray-50 border-gray-300 focus:ring-3 focus:ring-cyan-200 h-4 w-4 rounded" 
+                                class="bg-gray-50 border-gray-300 focus:ring-3 focus:ring-sky-200 h-4 w-4 rounded" 
                                 wire:model="checked">
                         </div>
                     </td>

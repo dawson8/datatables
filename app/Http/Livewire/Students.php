@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Exports\StudentExport;
 use App\Models\Classes;
 use App\Models\Student;
 use Livewire\Component;
@@ -17,6 +18,8 @@ class Students extends Component
     public $selectedClass;
     // public $sections;
     // public $selectedSection;
+    public $selectPage;
+    public $selectAll;
 
     public function deleteRecords()
     {
@@ -29,6 +32,8 @@ class Students extends Component
 
     public function deleteSingleRecord(Student $student)
     {
+        $this->checked = array_diff($this->checked, [$student->id]);
+        
         $student->delete();
         
         // TODO: notifications in view
@@ -46,18 +51,53 @@ class Students extends Component
     //     $this->sections = Section::where('class_id', $class_id)->get();
     // }
 
+    public function exportSelected()
+    {
+        return (new StudentExport($this->checked))->download('students.xlsx');
+    }
+
+    public function updatedSelectPage($value)
+    {
+        if($value) {
+            $this->checked = $this->students->pluck('id')->toArray();
+        } else {
+            $this->checked = [];
+        }
+    }
+
+    public function getStudentsQueryProperty()
+    {
+        return Student::with(['class', 'section'])
+            ->when($this->selectedClass, function($query) {
+                $query->where('class_id', $this->selectedClass);
+            })
+            // ->when($this->selectedSection, function($query) {
+            //     $query->where('section_id', $this->selectedSection);
+            // })
+            ->search(trim($this->search));
+    }
+
+    public function getStudentsProperty()
+    {
+        return $this->studentsQuery
+            ->paginate($this->paginate);
+    }
+
+    public function updatedChecked()
+    {
+        $this->selectPage = false;
+    }
+
+    public function selectAll()
+    {
+        $this->selectAll = true;
+        $this->checked = $this->studentsQuery->pluck('id')->toArray();
+    }
+
     public function render()
     {
         return view('livewire.students', [
-            'students' => Student::with(['class', 'section'])
-                ->when($this->selectedClass, function($query) {
-                    $query->where('class_id', $this->selectedClass);
-                })
-                // ->when($this->selectedSection, function($query) {
-                //     $query->where('section_id', $this->selectedSection);
-                // })
-                ->search(trim($this->search))
-                ->paginate($this->paginate),
+            'students' => $this->students,
             'classes' => Classes::all()
         ]);
     }
