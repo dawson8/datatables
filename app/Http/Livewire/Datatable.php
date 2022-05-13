@@ -24,18 +24,25 @@ class Datatable extends Component
         $this->columns = $this->columns();
     }
 
+    public function builder()
+    {
+        return new $this->model;
+    }
+
     public function columns()
     {
         // $this->model->getTable()
+        // dd($this->model);
+        $model = new \App\Models\User;
+        $table = $model->getTable();
+        $columns = Schema::getColumnListing($table);
+        dd($columns);
+
+        dd(Schema::getColumnListing($this->builder()->getQuery()->from));
         return collect(Schema::getColumnListing($this->builder()->getQuery()->from))
             ->reject(function($column) {
                 return in_array($column, $this->exclude);
             })->toArray();
-    }
-
-    public function builder()
-    {
-        return new $this->model;
     }
 
     protected function checkedRecords()
