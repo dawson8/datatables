@@ -16,10 +16,10 @@ class Students extends Component
     public $checked = [];
     public $search;
     public $selectedClass;
-    // public $sections;
-    // public $selectedSection;
     public $selectPage;
     public $selectAll;
+    public $sortBy = 'id';
+    public $sortAsc = true;
 
     public function deleteRecords()
     {
@@ -33,9 +33,9 @@ class Students extends Component
     public function deleteSingleRecord(Student $student)
     {
         $this->checked = array_diff($this->checked, [$student->id]);
-        
+
         $student->delete();
-        
+
         // TODO: notifications in view
         session()->flash('info', 'Record was deleted Successfully');
     }
@@ -44,12 +44,6 @@ class Students extends Component
     {
         return in_array($student_id, $this->checked);
     }
-
-    // TODO: We didn't set our database up like this because it made no sense
-    // public function updatedSelectedClass($class_id)
-    // {
-    //     $this->sections = Section::where('class_id', $class_id)->get();
-    // }
 
     public function exportSelected()
     {
@@ -71,10 +65,8 @@ class Students extends Component
             ->when($this->selectedClass, function($query) {
                 $query->where('class_id', $this->selectedClass);
             })
-            // ->when($this->selectedSection, function($query) {
-            //     $query->where('section_id', $this->selectedSection);
-            // })
-            ->search(trim($this->search));
+            ->search(trim($this->search))
+            ->orderBy($this->sortBy, $this->sortAsc ? 'ASC' : 'DESC');
     }
 
     public function getStudentsProperty()
@@ -92,6 +84,15 @@ class Students extends Component
     {
         $this->selectAll = true;
         $this->checked = $this->studentsQuery->pluck('id')->toArray();
+    }
+
+    public function sortBy($field)
+    {
+        if ($field === $this->sortBy) {
+            $this->sortAsc = !$this->sortAsc;
+        }
+
+        $this->sortBy = $field;
     }
 
     public function render()
