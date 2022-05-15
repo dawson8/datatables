@@ -7,7 +7,7 @@
 
     <div class="py-12">
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <livewire:datatable model="App\Models\User" exclude="id,password,remember_token" />
+            <livewire:datatable model="App\Models\Student" exclude="id,password,remember_token" />
         </div>
     </div>
 </x-app-layout>

@@ -3,7 +3,6 @@
 namespace App\Http\Livewire;
 
 use Livewire\Component;
-use Illuminate\Support\Facades\Schema;
 use Livewire\WithPagination;
 
 class Datatable extends Component
@@ -31,18 +30,37 @@ class Datatable extends Component
 
     public function columns()
     {
-        // $this->model->getTable()
-        // dd($this->model);
-        $model = new \App\Models\User;
-        $table = $model->getTable();
-        $columns = Schema::getColumnListing($table);
-        dd($columns);
+        $item = $this->builder()->where('id', 1)->first();
 
-        dd(Schema::getColumnListing($this->builder()->getQuery()->from));
-        return collect(Schema::getColumnListing($this->builder()->getQuery()->from))
-            ->reject(function($column) {
-                return in_array($column, $this->exclude);
-            })->toArray();
+        $columns = collect(array_keys($item->getAttributes()))
+            ->reject(fn ($column) => in_array($column, $this->exclude));
+
+        // $columns->push('test');
+
+        return $columns->toArray();
+
+        // dd($columns);
+    }
+
+    public function records()
+    {
+        $lastQuery = $this->builder()
+            ->when($this->query, fn ($builder) => $builder->search($this->query))
+            ->join('classes', 'students.class_id', '=', 'classes.id', 'left')
+            ->paginate($this->paginate)->flatten();
+        dd($lastQuery);
+        // foreach (explode('.', $relation) as $eachRelation) {
+        $model = $lastQuery->getRelation('class');
+
+        $table = $model->getRelated()->getTable();
+        $foreign = $model->getQualifiedForeignKeyName();
+        $other = $model->getQualifiedOwnerKeyName();
+
+        dd($table);
+        // return $this->builder()
+        //     ->when($this->query, fn ($builder) => $builder->search($this->query))
+        //     ->join('classes', 'students.class_id', '=', 'classes.id', 'left')
+        //     ->paginate($this->paginate);
     }
 
     protected function checkedRecords()
@@ -59,17 +77,6 @@ class Datatable extends Component
     {
         $this->checkedRecords()->delete();
         $this->checked = [];
-    }
-
-    public function records()
-    {
-        $builder = $this->builder();
-
-        if ($this->query) {
-            $builder = $builder->search($this->query);
-        }
-
-        return $builder->paginate($this->paginate);
     }
 
     public function render()

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DatatableController;
 use App\Http\Controllers\StudentController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
@@ -25,5 +26,6 @@ Route::get('/dashboard', function () {
 
 Route::get('/students', StudentController::class)->name('students');
 Route::get('/users', UserController::class)->name('users');
+Route::get('/datatable', DatatableController::class)->name('datatable');
 
 require __DIR__.'/auth.php';
