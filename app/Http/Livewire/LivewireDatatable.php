@@ -15,7 +15,7 @@ class LivewireDatatable extends Component
 
     public $model;
     public $columns;
-    public $perPage = 2;
+    public $perPage = 10;
     public $include;
     public $exclude;
 
@@ -36,9 +36,11 @@ class LivewireDatatable extends Component
 
     public function getColumns()
     {
-        return ColumnSet::build($this->model::firstOrFail())
+        $columns = ColumnSet::build($this->model::firstOrFail())
             ->include($this->include)
             ->exclude($this->exclude);
+
+        return($columns);
     }
 
     public function resolveColumnName($column)
@@ -57,7 +59,7 @@ class LivewireDatatable extends Component
         $table = '';
         $model = '';
         $lastQuery = $this->query;
-        
+
         foreach (explode('.', $relation) as $eachRelation) {
             $model = $lastQuery->getRelation($eachRelation);
 

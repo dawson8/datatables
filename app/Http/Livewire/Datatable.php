@@ -13,18 +13,23 @@ class Datatable extends Component
     public $model;
     public $columns;
     public $exclude;
-    public $paginate = 2;
+    public $paginate = 10;
     public $checked = [];
 
     protected $query;
 
     public function mount($model, $include = [], $exclude = [])
     {
-        $this->model = $model; 
-        
-        $this->columns = $this->columns();
-        $this->include($include);
-        $this->exclude($exclude);
+        // $this->model = $model;
+        $this->exclude = is_array($exclude)
+            ? $exclude
+            : array_map('trim', explode(',', $exclude));
+
+        if ($include) {
+            $this->include($include);
+        } else {
+            $this->columns = $this->columns();
+        }
     }
 
     public function builder()
@@ -34,29 +39,67 @@ class Datatable extends Component
 
     public function columns()
     {
-        $item = $this->builder()->firstOrFail();
+        $item = $this->model::firstOrFail();
 
-        // $columns = collect(array_keys($item->getAttributes()));
-        $columns = collect($item->getAttributes())->keys()->reject(function ($name) use ($item) {
-            return in_array($name, $item->getHidden());
-        });
-            // ->$this->exclude();
-            // ->reject($this->exclude);
+        return collect($item->getAttributes())->keys()
+            ->reject(function ($name) use ($item) {
+                return in_array($name, $item->getHidden())
+                    || in_array($name, $this->exclude);
+            });
+    }
 
-        return $columns;
+    public function resolveColumnName($column)
+    {
+        return ! Str::contains($column, '.')
+            ? $this->query->getModel()->getTable() . '.' . ($column ?? Str::before($column, ':'))
+            : $this->resolveRelationColumn($column);
+    }
+
+    protected function resolveRelationColumn($name)
+    {
+        $parts = explode('.', Str::before($name, ':'));
+        $columnName = array_pop($parts);
+        $relation = implode('.', $parts);
+
+        $table = '';
+        $model = '';
+        $lastQuery = $this->query;
+
+        foreach (explode('.', $relation) as $eachRelation) {
+            $model = $lastQuery->getRelation($eachRelation);
+
+            $table = $model->getRelated()->getTable();
+            $foreign = $model->getQualifiedForeignKeyName();
+            $other = $model->getQualifiedOwnerKeyName();
+
+            if ($table) {
+                $joins = [];
+                foreach ((array) $this->query->getQuery()->joins as $key => $join) {
+                    $joins[] = $join->table;
+                }
+
+                if (! in_array($table, $joins)) {
+                    $this->query->join($table, $foreign, '=', $other, 'left');
+                }
+            }
+            $lastQuery = $model->getQuery();
+        }
+
+        return $table . '.' . $columnName;
     }
 
     public function records()
     {
-        // dd($this->columns);
-        return $this->builder()->addSelect(
-            $this->columns()->map(function ($column) {
-                dd($column);
-                return $column . ' AS ' . $column;
+        $this->query = $this->builder();
+
+        $this->query->addSelect(
+            $this->columns->map(function ($column) {
+                return $this->resolveColumnName($column) . ' AS ' . $column;
             })
-            ->flatten()
             ->toArray()
-        )->paginate($this->paginate);
+        );
+
+        return $this->query->paginate($this->paginate);
     }
 
     public function include($include)
@@ -65,43 +108,18 @@ class Datatable extends Component
             return $this;
         }
 
-        $include = collect(is_array($include) 
-            ? $include 
+        $include = collect(is_array($include)
+            ? $include
             : array_map('trim', explode(',', $include)));
 
-        // Replace existing columns
         $this->columns = $include->map(function ($column) {
-            return Str::contains($column, '|')
-                ? Str::before($column, '|')
-                : $column;
-        });
-        
-        // Add to existing columns - not quite there yet
-        // $this->columns = $this->columns->push($include->map(function ($column) {
-        //     return Str::contains($column, '|')
-        //         ? Str::before($column, '|')
-        //         : $column;
-        // }));
-
-        return $this;
-    }
-
-    public function exclude($exclude)
-    {
-        if (! $exclude) {
-            return $this;
-        }
-
-        $exclude = is_array($exclude) 
-            ? $exclude 
-            : array_map('trim', explode(',', $exclude));
-
-        $this->columns = $this->columns->reject(function ($column) use ($exclude) {
-            return in_array(Str::after($column, '.'), $exclude);
+            return Str::contains($column, '|') ? Str::before($column, '|') : $column;
         });
 
         return $this;
     }
+
+
 
 
 
@@ -110,7 +128,7 @@ class Datatable extends Component
 
     protected function checkedRecords()
     {
-        return $this->builder()->whereIn('id', $this->checked);
+        // return $this->builder()->whereIn('id', $this->checked);
     }
 
     public function isChecked($record)
@@ -120,7 +138,7 @@ class Datatable extends Component
 
     public function deleteChecked()
     {
-        $this->checkedRecords()->delete();
+        // $this->checkedRecords()->delete();
         $this->checked = [];
     }
 
