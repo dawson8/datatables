@@ -4,6 +4,7 @@ namespace App\Http\Livewire;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Illuminate\Support\Str;
 
 class Datatable extends Component
 {
@@ -12,56 +13,100 @@ class Datatable extends Component
     public $model;
     public $columns;
     public $exclude;
-    public $paginate = 10;
+    public $paginate = 2;
     public $checked = [];
-    public $query;
 
-    public function mount($model, $exclude = '')
+    protected $query;
+
+    public function mount($model, $include = [], $exclude = [])
     {
-        $this->model = $model;
-        $this->exclude = explode(',', $exclude);
+        $this->model = $model; 
+        
         $this->columns = $this->columns();
+        $this->include($include);
+        $this->exclude($exclude);
     }
 
     public function builder()
     {
-        return new $this->model;
+        return $this->model::query();
     }
 
     public function columns()
     {
-        $item = $this->builder()->where('id', 1)->first();
+        $item = $this->builder()->firstOrFail();
 
-        $columns = collect(array_keys($item->getAttributes()))
-            ->reject(fn ($column) => in_array($column, $this->exclude));
+        // $columns = collect(array_keys($item->getAttributes()));
+        $columns = collect($item->getAttributes())->keys()->reject(function ($name) use ($item) {
+            return in_array($name, $item->getHidden());
+        });
+            // ->$this->exclude();
+            // ->reject($this->exclude);
 
-        // $columns->push('test');
-
-        return $columns->toArray();
-
-        // dd($columns);
+        return $columns;
     }
 
     public function records()
     {
-        $lastQuery = $this->builder()
-            ->when($this->query, fn ($builder) => $builder->search($this->query))
-            ->join('classes', 'students.class_id', '=', 'classes.id', 'left')
-            ->paginate($this->paginate)->flatten();
-        dd($lastQuery);
-        // foreach (explode('.', $relation) as $eachRelation) {
-        $model = $lastQuery->getRelation('class');
-
-        $table = $model->getRelated()->getTable();
-        $foreign = $model->getQualifiedForeignKeyName();
-        $other = $model->getQualifiedOwnerKeyName();
-
-        dd($table);
-        // return $this->builder()
-        //     ->when($this->query, fn ($builder) => $builder->search($this->query))
-        //     ->join('classes', 'students.class_id', '=', 'classes.id', 'left')
-        //     ->paginate($this->paginate);
+        // dd($this->columns);
+        return $this->builder()->addSelect(
+            $this->columns()->map(function ($column) {
+                dd($column);
+                return $column . ' AS ' . $column;
+            })
+            ->flatten()
+            ->toArray()
+        )->paginate($this->paginate);
     }
+
+    public function include($include)
+    {
+        if (! $include) {
+            return $this;
+        }
+
+        $include = collect(is_array($include) 
+            ? $include 
+            : array_map('trim', explode(',', $include)));
+
+        // Replace existing columns
+        $this->columns = $include->map(function ($column) {
+            return Str::contains($column, '|')
+                ? Str::before($column, '|')
+                : $column;
+        });
+        
+        // Add to existing columns - not quite there yet
+        // $this->columns = $this->columns->push($include->map(function ($column) {
+        //     return Str::contains($column, '|')
+        //         ? Str::before($column, '|')
+        //         : $column;
+        // }));
+
+        return $this;
+    }
+
+    public function exclude($exclude)
+    {
+        if (! $exclude) {
+            return $this;
+        }
+
+        $exclude = is_array($exclude) 
+            ? $exclude 
+            : array_map('trim', explode(',', $exclude));
+
+        $this->columns = $this->columns->reject(function ($column) use ($exclude) {
+            return in_array(Str::after($column, '.'), $exclude);
+        });
+
+        return $this;
+    }
+
+
+
+
+
 
     protected function checkedRecords()
     {

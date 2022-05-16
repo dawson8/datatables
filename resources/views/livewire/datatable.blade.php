@@ -5,6 +5,7 @@
             <label for="paginate" class="sr-only">Per Page</label>
             <div class="w-24">
                 <select wire:model="paginate" class="border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-sky-600 focus:border-sky-600 block w-full p-2.5">
+                    <option value="10">2</option>
                     <option value="10">10</option>
                     <option value="20">20</option>
                     <option value="30">30</option>

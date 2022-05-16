@@ -14,39 +14,15 @@ class ColumnSet
         $this->columns = $columns;
     }
 
-    public static function build($input)
-    {
-        return is_array($input)
-            ? self::fromArray($input)
-            : self::fromModelInstance($input);
-    }
-
-    public static function fromModelInstance($model)
+    public static function build($model)
     {
         return new static(
             collect($model->getAttributes())->keys()->reject(function ($name) use ($model) {
                 return in_array($name, $model->getHidden());
-            })->map(function ($attribute, $index) {
-                return Column::name($attribute)->setIndex($index);
+            })->map(function ($attribute) {
+                return Column::name($attribute);
             })
         );
-    }
-
-    public static function fromArray($columns)
-    {
-        return new static(collect(static::squeezeIndex($columns)));
-    }
-
-    /**
-     * Takes an array of columns and squeezes the consecutive index inside each element.
-     */
-    public static function squeezeIndex($columns)
-    {
-        foreach ($columns as $index => $column) {
-            $column->setIndex($index);
-        }
-
-        return $columns;
     }
 
     public function include($include)
@@ -56,6 +32,7 @@ class ColumnSet
         }
 
         $include = collect(is_array($include) ? $include : array_map('trim', explode(',', $include)));
+       
         $this->columns = $include->map(function ($column) {
             return Str::contains($column, '|')
                 ? Column::name(Str::before($column, '|'))->label(Str::after($column, '|'))
@@ -80,13 +57,9 @@ class ColumnSet
         return $this;
     }
 
-    public function columns()
-    {
-        return collect($this->columns);
-    }
 
     public function columnsArray()
     {
-        return $this->columns()->map->toArray()->toArray();
+        return collect($this->columns)->map->toArray();
     }
 }
