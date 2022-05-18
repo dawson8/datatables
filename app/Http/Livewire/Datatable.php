@@ -2,144 +2,76 @@
 
 namespace App\Http\Livewire;
 
+use App\Datatables\EloquentDatatable;
 use Livewire\Component;
-use Livewire\WithPagination;
 use Illuminate\Support\Str;
+use Livewire\WithPagination;
 
 class Datatable extends Component
 {
     use WithPagination;
 
     public $model;
+    public $include;
     public $columns;
-    public $exclude;
-    public $paginate = 10;
-    public $checked = [];
+    public $query;
 
-    protected $query;
-
-    public function mount($model, $include = [], $exclude = [])
+    public function mount($model, $include = [])
     {
-        // $this->model = $model;
-        $this->exclude = is_array($exclude)
-            ? $exclude
-            : array_map('trim', explode(',', $exclude));
-
-        if ($include) {
-            $this->include($include);
-        } else {
-            $this->columns = $this->columns();
-        }
+        $this->model = $model;
+        $this->columns = $this->columns();
     }
 
     public function builder()
     {
-        return $this->model::query();
+        return new $this->model;
     }
 
     public function columns()
     {
-        $item = $this->model::firstOrFail();
+        // $row = $this->builder()->firstOrFail();
 
-        return collect($item->getAttributes())->keys()
-            ->reject(function ($name) use ($item) {
-                return in_array($name, $item->getHidden())
-                    || in_array($name, $this->exclude);
-            });
+        $include = collect(is_array($this->include)
+            ? $this->include
+            : array_map('trim', explode(',', $this->include)));
+        // dd($include);
+        // $test = collect([
+        //     'name' => 'Desk',
+        //     'price' => 100
+        // ]);
+
+        // dd($test);
+
+        $columns = $include->map(function ($column) {
+            return EloquentDatatable::build($column);
+        });
+
+        dd($columns);
+        return $columns;
+
+        // return collect(array_keys($row->getAttributes()))
+        //     ->reject(function ($column) use ($row) {
+        //         return in_array($column, $row->getHidden());
+        //     }
+        // );
     }
+    // $column->label = (string) Str::of($name)->after('.')->ucfirst()->replace('_', ' ');
+    // public function isBaseColumn()
+    // {
+    //     return ! Str::startsWith($this->name, 'callback_') && ! Str::contains($this->name, '.') && ! $this->raw;
+    // }
 
     public function resolveColumnName($column)
     {
-        return ! Str::contains($column, '.')
-            ? $this->query->getModel()->getTable() . '.' . ($column ?? Str::before($column, ':'))
-            : $this->resolveRelationColumn($column);
-    }
+        $name = Str::after(Str::before($column, '|'), '.');
+        $model = Str::after($column, '|');
 
-    protected function resolveRelationColumn($name)
-    {
-        $parts = explode('.', Str::before($name, ':'));
-        $columnName = array_pop($parts);
-        $relation = implode('.', $parts);
-
-        $table = '';
-        $model = '';
-        $lastQuery = $this->query;
-
-        foreach (explode('.', $relation) as $eachRelation) {
-            $model = $lastQuery->getRelation($eachRelation);
-
-            $table = $model->getRelated()->getTable();
-            $foreign = $model->getQualifiedForeignKeyName();
-            $other = $model->getQualifiedOwnerKeyName();
-
-            if ($table) {
-                $joins = [];
-                foreach ((array) $this->query->getQuery()->joins as $key => $join) {
-                    $joins[] = $join->table;
-                }
-
-                if (! in_array($table, $joins)) {
-                    $this->query->join($table, $foreign, '=', $other, 'left');
-                }
-            }
-            $lastQuery = $model->getQuery();
-        }
-
-        return $table . '.' . $columnName;
+        return Str::title($model . ' ' . $name);
     }
 
     public function records()
     {
-        $this->query = $this->builder();
-
-        $this->query->addSelect(
-            $this->columns->map(function ($column) {
-                return $this->resolveColumnName($column) . ' AS ' . $column;
-            })
-            ->toArray()
-        );
-
-        return $this->query->paginate($this->paginate);
-    }
-
-    public function include($include)
-    {
-        if (! $include) {
-            return $this;
-        }
-
-        $include = collect(is_array($include)
-            ? $include
-            : array_map('trim', explode(',', $include)));
-
-        $this->columns = $include->map(function ($column) {
-            return Str::contains($column, '|') ? Str::before($column, '|') : $column;
-        });
-
-        return $this;
-    }
-
-
-
-
-
-
-
-
-    protected function checkedRecords()
-    {
-        // return $this->builder()->whereIn('id', $this->checked);
-    }
-
-    public function isChecked($record)
-    {
-        return in_array($record->id, $this->checked);
-    }
-
-    public function deleteChecked()
-    {
-        // $this->checkedRecords()->delete();
-        $this->checked = [];
+        dd($this->builder()->paginate(10));
     }
 
     public function render()

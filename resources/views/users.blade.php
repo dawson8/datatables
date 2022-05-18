@@ -12,7 +12,7 @@
                 include="name, email, address, class.name|Class, section.name|Section" />
         </div>
 
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        {{-- <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <livewire:datatable
                 model="App\Models\User"
                 exclude="id, updated_at" />
@@ -21,6 +21,6 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <livewire:datatable
                 model="App\Models\Section" />
-        </div>
+        </div> --}}
     </div>
 </x-app-layout>

@@ -1,11 +1,10 @@
 <div>
     <!-- Filters -->
-    <div class="mb-2 w-full">
+    {{-- <div class="mb-2 w-full">
         <div class="flex space-x-2 -ml-2">
             <label for="paginate" class="sr-only">Per Page</label>
             <div class="w-24">
                 <select wire:model="paginate" class="border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-sky-600 focus:border-sky-600 block w-full p-2.5">
-                    <option value="10">2</option>
                     <option value="10">10</option>
                     <option value="20">20</option>
                     <option value="30">30</option>
@@ -36,9 +35,9 @@
 
             <label for="search" class="sr-only">Search</label>
             <div class="relative sm:w-64 xl:w-96">
-                <input type="search" 
-                    wire:model.debounce.500ms="query"                    
-                    class="border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-sky-600 focus:border-sky-600 block w-full p-2.5" 
+                <input type="search"
+                    wire:model.debounce.500ms="query"
+                    class="border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-sky-600 focus:border-sky-600 block w-full p-2.5"
                     placeholder="Search">
             </div>
 
@@ -52,7 +51,7 @@
                 </button>
             </div>
         </div>
-    </div>
+    </div> --}}
 
     <!-- Table -->
     <div class='overflow-x-auto w-full'>
@@ -67,7 +66,7 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 @foreach ($this->records() as $record)
-                    <tr class="hover:bg-gray-200 @if($this->isChecked($record)) bg-sky-100 hover:bg-sky-200 @endif">
+                    <tr class="hover:bg-gray-200">
                         <td class="p-2 w-4">
                             <div class="flex items-center">
                                 <input type="checkbox"
@@ -88,7 +87,7 @@
     </div>
 
     <!-- Pagination -->
-    <div class="py-2">
+    {{-- <div class="py-2">
         {{ $this->records()->links() }}
-    </div>
+    </div> --}}
 </div>
