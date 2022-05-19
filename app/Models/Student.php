@@ -9,6 +9,15 @@ class Student extends Model
 {
     use HasFactory;
 
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'address',
+    ];
+
     public function class()
     {
         return $this->belongsTo(Classes::class, 'class_id');
