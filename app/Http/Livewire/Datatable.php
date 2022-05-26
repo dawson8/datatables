@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use Illuminate\Support\Facades\Schema;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -10,12 +11,14 @@ class Datatable extends Component
     use WithPagination;
 
     public $model;
+    // public $table;
     public $columns;
-    public $query;
 
     public function mount($model)
     {
         $this->model = $model;
+        // $this->table = $this->builder()->getTable();
+        // dd($this->table);
         $this->columns = $this->columns();
     }
 
@@ -26,20 +29,24 @@ class Datatable extends Component
 
     public function columns()
     {
-        $columns =  collect($this->builder()
-            ->firstOrFail()
-            ->getAttributes())
+        return collect($this->builder()->firstOrFail()->getAttributes())
             ->keys()
-            ->map(function ($item) {
-                return $item . ' nice';
-            })->reject(function ($column) {
-                    return in_array($column, $this->builder()->getHidden());
-                }
-            );
-
-        dd($columns);
-        // dd($columnSet);
+            ->reject(function ($column) {
+                return in_array($column, $this->builder()->getHidden());
+            });
     }
+
+    // public function getProcessedColumnsProperty()
+    // {
+    //     return ColumnSet::build($this->columns())
+    //         ->include($this->include)
+    //         ->exclude($this->exclude)
+    //         ->hide($this->hide)
+    //         ->formatDates($this->dates)
+    //         ->formatTimes($this->times)
+    //         ->search($this->searchable)
+    //         ->sort($this->sort);
+    // }
 
     public function records()
     {

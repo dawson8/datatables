@@ -24,6 +24,10 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth'])->name('dashboard');
 
+Route::get('/components', function () {
+    return view('component-test');
+});
+
 Route::get('/students', StudentController::class)->name('students');
 Route::get('/users', UserController::class)->name('users');
 Route::get('/datatable', DatatableController::class)->name('datatable');
